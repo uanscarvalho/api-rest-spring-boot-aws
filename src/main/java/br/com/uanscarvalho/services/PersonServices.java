@@ -1,8 +1,10 @@
 package br.com.uanscarvalho.services;
 
 import br.com.uanscarvalho.exceptions.ResourceNotFoundException;
+import br.com.uanscarvalho.mapper.ModelMapperConfig;
 import br.com.uanscarvalho.model.Person;
 import br.com.uanscarvalho.repository.PersonRepository;
+import br.com.uanscarvalho.vo.PersonVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,29 +19,31 @@ public class PersonServices {
     @Autowired
     PersonRepository repository;
 
-    public List<Person> findAll() {
+    public List<PersonVO> findAll() {
 
         logger.info("Finding all people!");
 
-        return repository.findAll();
+        return ModelMapperConfig.parseObject(repository.findAll(), PersonVO.class);
     }
 
-    public Person findById(Long id) {
+    public PersonVO findById(Long id) {
 
         logger.info("Finding one person!");
 
-        return repository.findById(id)
+        var entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+        return ModelMapperConfig.parseObject(entity, PersonVO.class);
     }
 
-    public Person create(Person person) {
+    public PersonVO create(PersonVO person) {
 
         logger.info("Creating one person!");
-
-        return repository.save(person);
+        var entity = ModelMapperConfig.parseObject(person, Person.class);
+        var vo = ModelMapperConfig.parseObject(repository.save(entity), PersonVO.class);
+        return vo;
     }
 
-    public Person update(Person person) {
+    public PersonVO update(PersonVO person) {
 
         logger.info("Updating one person!");
 
@@ -51,7 +55,8 @@ public class PersonServices {
         entity.setAddress(person.getAddress());
         entity.setGender(person.getGender());
 
-        return repository.save(person);
+        var vo = ModelMapperConfig.parseObject(repository.save(entity), PersonVO.class);
+        return vo;
     }
 
     public void delete(Long id) {
@@ -63,3 +68,4 @@ public class PersonServices {
         repository.delete(entity);
     }
 }
+
