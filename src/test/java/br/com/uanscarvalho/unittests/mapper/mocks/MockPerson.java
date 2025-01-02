@@ -1,10 +1,10 @@
 package br.com.uanscarvalho.unittests.mapper.mocks;
 
+import br.com.uanscarvalho.model.Person;
+import br.com.uanscarvalho.vo.PersonVO;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import br.com.uanscarvalho.vo.PersonVO;
-import br.com.uanscarvalho.model.Person;
 
 public class MockPerson {
 
@@ -48,7 +48,7 @@ public class MockPerson {
         person.setAddress("Addres Test" + number);
         person.setFirstName("First Name Test" + number);
         person.setGender(((number % 2)==0) ? "Male" : "Female");
-        person.setId(number.longValue());
+        person.setKey(number.longValue());
         person.setLastName("Last Name Test" + number);
         return person;
     }

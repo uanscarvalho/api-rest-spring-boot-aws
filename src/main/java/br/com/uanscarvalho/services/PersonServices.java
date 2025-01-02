@@ -1,5 +1,6 @@
 package br.com.uanscarvalho.services;
 
+import br.com.uanscarvalho.controllers.PersonController;
 import br.com.uanscarvalho.exceptions.ResourceNotFoundException;
 import br.com.uanscarvalho.mapper.ModelMapperConfig;
 import br.com.uanscarvalho.model.Person;
@@ -10,6 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PersonServices {
@@ -23,7 +28,18 @@ public class PersonServices {
 
         logger.info("Finding all people!");
 
-        return ModelMapperConfig.parseObject(repository.findAll(), PersonVO.class);
+        var persons = repository.findAll().stream()
+                .map(entity -> {
+                    var vo = ModelMapperConfig.parseObject(entity, PersonVO.class);
+                    vo.setKey(entity.getId()); // Ajuste para garantir que o key não seja null
+                    return vo;
+                })
+                .collect(Collectors.toList());
+        persons
+                .stream()
+                .forEach(p -> p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel()));
+
+        return persons;
     }
 
     public PersonVO findById(Long id) {
@@ -32,7 +48,12 @@ public class PersonServices {
 
         var entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
-        return ModelMapperConfig.parseObject(entity, PersonVO.class);
+
+        var vo = ModelMapperConfig.parseObject(entity, PersonVO.class);
+        vo.setKey(entity.getId());
+
+        vo.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
+        return vo;
     }
 
     public PersonVO create(PersonVO person) {
@@ -40,6 +61,8 @@ public class PersonServices {
         logger.info("Creating one person!");
         var entity = ModelMapperConfig.parseObject(person, Person.class);
         var vo = ModelMapperConfig.parseObject(repository.save(entity), PersonVO.class);
+        vo.setKey(entity.getId());
+        vo.add(linkTo(methodOn(PersonController.class).findById(vo.getKey())).withSelfRel());
         return vo;
     }
 
@@ -47,7 +70,7 @@ public class PersonServices {
 
         logger.info("Updating one person!");
 
-        var entity = repository.findById(person.getId())
+        var entity = repository.findById(person.getKey())
                 .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
 
         entity.setFirstName(person.getFirstName());
@@ -56,6 +79,9 @@ public class PersonServices {
         entity.setGender(person.getGender());
 
         var vo = ModelMapperConfig.parseObject(repository.save(entity), PersonVO.class);
+        vo.setKey(entity.getId());
+
+        vo.add(linkTo(methodOn(PersonController.class).findById(vo.getKey())).withSelfRel());
         return vo;
     }
 
