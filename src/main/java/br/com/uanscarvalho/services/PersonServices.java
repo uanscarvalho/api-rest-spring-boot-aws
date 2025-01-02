@@ -1,6 +1,7 @@
 package br.com.uanscarvalho.services;
 
 import br.com.uanscarvalho.controllers.PersonController;
+import br.com.uanscarvalho.exceptions.RequiredObjectIsNullException;
 import br.com.uanscarvalho.exceptions.ResourceNotFoundException;
 import br.com.uanscarvalho.mapper.ModelMapperConfig;
 import br.com.uanscarvalho.model.Person;
@@ -58,6 +59,10 @@ public class PersonServices {
 
     public PersonVO create(PersonVO person) {
 
+        if (person == null) {
+            throw new RequiredObjectIsNullException();
+        }
+
         logger.info("Creating one person!");
         var entity = ModelMapperConfig.parseObject(person, Person.class);
         var vo = ModelMapperConfig.parseObject(repository.save(entity), PersonVO.class);
@@ -67,6 +72,10 @@ public class PersonServices {
     }
 
     public PersonVO update(PersonVO person) {
+
+        if (person == null) {
+            throw new RequiredObjectIsNullException();
+        }
 
         logger.info("Updating one person!");
 
