@@ -86,7 +86,7 @@ class PersonServicesTest {
     }
 
     @Test
-    void testeCreate() {
+    void testCreate() {
 
         Person entity = input.mockEntity(1);
 

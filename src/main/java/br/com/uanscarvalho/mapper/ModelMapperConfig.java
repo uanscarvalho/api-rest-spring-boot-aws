@@ -1,5 +1,7 @@
 package br.com.uanscarvalho.mapper;
 
+import br.com.uanscarvalho.model.Person;
+import br.com.uanscarvalho.vo.PersonVO;
 import org.modelmapper.ModelMapper;
 
 import java.util.ArrayList;
@@ -8,6 +10,17 @@ import java.util.List;
 public class ModelMapperConfig {
 
     private static ModelMapper mapper = new ModelMapper();
+
+    static {
+        mapper.createTypeMap(
+                Person.class,
+                PersonVO.class)
+            .addMapping(Person::getId, PersonVO::setKey);
+        mapper.createTypeMap(
+                        PersonVO.class,
+                        Person.class)
+                .addMapping(PersonVO::getKey, Person::setId);
+    }
 
     public static <O, D> D parseObject(O origin, Class<D> destination) {
         return mapper.map(origin, destination);
